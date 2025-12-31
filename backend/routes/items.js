@@ -4,7 +4,6 @@ import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Get all items (public)
 router.get('/', async (req, res) => {
   try {
     const items = await Item.find().populate('user', 'name email').sort({ createdAt: -1 });
@@ -14,7 +13,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Get single item by ID (public)
 router.get('/:id', async (req, res) => {
   try {
     const item = await Item.findById(req.params.id).populate('user', 'name email');
@@ -27,7 +25,6 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Create new item (protected)
 router.post('/', authenticate, async (req, res) => {
   const item = new Item({
     title: req.body.title,
@@ -51,7 +48,6 @@ router.post('/', authenticate, async (req, res) => {
   }
 });
 
-// Update item (protected - only owner)
 router.patch('/:id', authenticate, async (req, res) => {
   try {
     const item = await Item.findById(req.params.id);
@@ -59,7 +55,6 @@ router.patch('/:id', authenticate, async (req, res) => {
       return res.status(404).json({ message: 'Item not found' });
     }
 
-    // Check if user is the owner
     if (item.user.toString() !== req.userId.toString()) {
       return res.status(403).json({ message: 'Not authorized to update this item' });
     }
@@ -79,7 +74,6 @@ router.patch('/:id', authenticate, async (req, res) => {
   }
 });
 
-// Delete item (protected - only owner)
 router.delete('/:id', authenticate, async (req, res) => {
   try {
     const item = await Item.findById(req.params.id);
@@ -87,7 +81,6 @@ router.delete('/:id', authenticate, async (req, res) => {
       return res.status(404).json({ message: 'Item not found' });
     }
 
-    // Check if user is the owner
     if (item.user.toString() !== req.userId.toString()) {
       return res.status(403).json({ message: 'Not authorized to delete this item' });
     }
@@ -99,7 +92,6 @@ router.delete('/:id', authenticate, async (req, res) => {
   }
 });
 
-// Search items (public)
 router.get('/search/query', async (req, res) => {
   try {
     const query = req.query.q;

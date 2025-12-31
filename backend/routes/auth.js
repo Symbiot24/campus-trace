@@ -5,22 +5,18 @@ import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Signup
 router.post('/signup', async (req, res) => {
   try {
     const { name, email, password, phone } = req.body;
 
-    // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: 'Email already registered' });
     }
 
-    // Create new user
     const user = new User({ name, email, password, phone });
     await user.save();
 
-    // Generate token
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
       expiresIn: '7d'
     });
@@ -40,24 +36,20 @@ router.post('/signup', async (req, res) => {
   }
 });
 
-// Login
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Find user
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
-    // Check password
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
-    // Generate token
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
       expiresIn: '7d'
     });
@@ -77,7 +69,6 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// Get current user
 router.get('/me', authenticate, async (req, res) => {
   res.json({
     user: {
@@ -89,7 +80,6 @@ router.get('/me', authenticate, async (req, res) => {
   });
 });
 
-// Logout (client-side token removal, but endpoint for consistency)
 router.post('/logout', authenticate, (req, res) => {
   res.json({ message: 'Logged out successfully' });
 });

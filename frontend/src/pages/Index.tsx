@@ -7,7 +7,6 @@ import HowItWorksSection from "@/components/HowItWorksSection";
 import CommunityValuesSection from "@/components/CommunityValuesSection";
 import ItemGrid from "@/components/ItemGrid";
 import FilterButtons from "@/components/FilterButtons";
-import TestimonialsSection from "@/components/TestimonialsSection";
 import CallToActionSection from "@/components/CallToActionSection";
 import ReportModal, { ReportFormData } from "@/components/ReportModal";
 import SearchModal from "@/components/SearchModal";
@@ -82,7 +81,6 @@ const Index = () => {
     }
   };
 
-  // Filter items based on status
   const getFilteredItems = () => {
     let filtered = items.filter((item) => item.status !== "claimed");
     
@@ -101,7 +99,7 @@ const Index = () => {
         <title>Campus-Trace</title>
         <meta
           name="description"
-          content="Find your lost items on campus with AI-powered semantic search. ReTrace helps students reunite with their belongings quickly and efficiently."
+          content="Find your lost items on campus with AI-powered semantic search. Campus-Trace helps students reunite with their belongings quickly and efficiently."
         />
       </Helmet>
 
@@ -140,8 +138,6 @@ const Index = () => {
               />
             </div>
           </section>
-
-          <TestimonialsSection />
 
           <CallToActionSection
             onOpenReport={handleOpenReport}
