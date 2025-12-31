@@ -13,9 +13,11 @@ const PORT = process.env.PORT || 5001;
 
 // CORS configuration
 const corsOptions = {
-  origin: process.env.FRONTEND_URL 
-    ? process.env.FRONTEND_URL.split(',').map(url => url.trim())
-    : ['http://localhost:5173', 'http://localhost:3000'],
+  origin: [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'https://campus-trace.vercel.app'
+  ],
   credentials: true,
   optionsSuccessStatus: 200
 };
