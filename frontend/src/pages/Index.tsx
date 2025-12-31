@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
 import HowItWorksSection from "@/components/HowItWorksSection";
 import CommunityValuesSection from "@/components/CommunityValuesSection";
 import ItemGrid from "@/components/ItemGrid";
+import FilterButtons from "@/components/FilterButtons";
 import TestimonialsSection from "@/components/TestimonialsSection";
 import CallToActionSection from "@/components/CallToActionSection";
 import ReportModal, { ReportFormData } from "@/components/ReportModal";
@@ -13,6 +15,7 @@ import ItemDetailModal from "@/components/ItemDetailModal";
 import Footer from "@/components/Footer";
 import { Item } from "@/components/ItemCard";
 import { itemsApi } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 const Index = () => {
@@ -21,6 +24,9 @@ const Index = () => {
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+  const [statusFilter, setStatusFilter] = useState<"all" | "lost" | "found">("all");
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadItems();
@@ -39,6 +45,24 @@ const Index = () => {
     }
   };
 
+  const handleOpenReport = () => {
+    if (!isAuthenticated) {
+      toast.error("Please log in to report an item");
+      navigate("/login");
+      return;
+    }
+    setIsReportOpen(true);
+  };
+
+  const handleOpenSearch = () => {
+    if (!isAuthenticated) {
+      toast.error("Please log in to search for items");
+      navigate("/login");
+      return;
+    }
+    setIsSearchOpen(true);
+  };
+
   const handleReportSubmit = async (formData: ReportFormData) => {
     try {
       const newItem = await itemsApi.create({
@@ -46,8 +70,9 @@ const Index = () => {
         description: formData.description,
         category: formData.category,
         location: formData.location,
-        imageUrl: formData.imageUrl || "https://images.unsplash.com/photo-1586769852044-692d6e3703f0?w=400&h=300&fit=crop",
+        imageUrl: formData.imageUrl || "",
         status: formData.status,
+        contactPhone: formData.contactPhone,
       });
       setItems([newItem, ...items]);
     } catch (error) {
@@ -55,6 +80,19 @@ const Index = () => {
       console.error("Error creating item:", error);
       throw error;
     }
+  };
+
+  // Filter items based on status
+  const getFilteredItems = () => {
+    let filtered = items.filter((item) => item.status !== "claimed");
+    
+    if (statusFilter === "lost") {
+      filtered = filtered.filter((item) => item.status === "lost");
+    } else if (statusFilter === "found") {
+      filtered = filtered.filter((item) => item.status === "found");
+    }
+    
+    return filtered;
   };
 
   return (
@@ -69,31 +107,45 @@ const Index = () => {
 
       <div className="min-h-screen flex flex-col bg-background">
         <Navbar
-          onOpenReport={() => setIsReportOpen(true)}
-          onOpenSearch={() => setIsSearchOpen(true)}
+          onOpenReport={handleOpenReport}
+          onOpenSearch={handleOpenSearch}
         />
 
         <main className="flex-1">
           <HeroSection
-            onOpenReport={() => setIsReportOpen(true)}
-            onOpenSearch={() => setIsSearchOpen(true)}
+            onOpenReport={handleOpenReport}
+            onOpenSearch={handleOpenSearch}
           />
 
           <HowItWorksSection />
 
-          <CommunityValuesSection onOpenReport={() => setIsReportOpen(true)} />
+          <CommunityValuesSection onOpenReport={handleOpenReport} />
 
-          <ItemGrid
-            items={items.filter((item) => item.status !== "claimed")}
-            onViewItem={setSelectedItem}
-            title="Recently Reported Items"
-          />
+          <section className="py-16 bg-muted/30">
+            <div className="container mx-auto px-4">
+              <div className="text-center mb-8">
+                <h2 className="text-3xl font-display font-bold mb-3">Recently Reported Items</h2>
+                <p className="text-muted-foreground mb-6">
+                  Browse through items that have been found or reported as lost
+                </p>
+                <FilterButtons
+                  activeFilter={statusFilter}
+                  onFilterChange={setStatusFilter}
+                />
+              </div>
+              <ItemGrid
+                items={getFilteredItems()}
+                onViewItem={setSelectedItem}
+                title=""
+              />
+            </div>
+          </section>
 
           <TestimonialsSection />
 
           <CallToActionSection
-            onOpenReport={() => setIsReportOpen(true)}
-            onOpenSearch={() => setIsSearchOpen(true)}
+            onOpenReport={handleOpenReport}
+            onOpenSearch={handleOpenSearch}
           />
         </main>
 

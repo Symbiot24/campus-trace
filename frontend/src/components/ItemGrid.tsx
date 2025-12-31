@@ -10,28 +10,24 @@ interface ItemGridProps {
 const ItemGrid = ({ items, onViewItem, title = "Recent Items" }: ItemGridProps) => {
   if (items.length === 0) {
     return (
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <div className="text-center py-16">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
-              <Package className="h-8 w-8 text-muted-foreground" />
-            </div>
-            <h3 className="font-display text-xl font-semibold text-foreground mb-2">
-              No items yet
-            </h3>
-            <p className="text-muted-foreground">
-              Be the first to report a found item!
-            </p>
-          </div>
+      <div className="text-center py-16">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
+          <Package className="h-8 w-8 text-muted-foreground" />
         </div>
-      </section>
+        <h3 className="font-display text-xl font-semibold text-foreground mb-2">
+          No items found
+        </h3>
+        <p className="text-muted-foreground">
+          {title ? "Try changing the filter or check back later" : "Be the first to report an item!"}
+        </p>
+      </div>
     );
   }
 
   return (
-    <section className="py-16">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between mb-8">
+    <div className="space-y-6">
+      {title && (
+        <div className="flex items-center justify-between">
           <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">
             {title}
           </h2>
@@ -39,20 +35,20 @@ const ItemGrid = ({ items, onViewItem, title = "Recent Items" }: ItemGridProps) 
             {items.length} item{items.length !== 1 ? "s" : ""}
           </span>
         </div>
+      )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {items.map((item, index) => (
-            <ItemCard
-              key={item.id}
-              item={item}
-              onView={onViewItem}
-              className="animate-fade-up"
-              style={{ animationDelay: `${index * 0.05}s` }}
-            />
-          ))}
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {items.map((item, index) => (
+          <ItemCard
+            key={item.id}
+            item={item}
+            onView={onViewItem}
+            className="animate-fade-up"
+            style={{ animationDelay: `${index * 0.05}s` }}
+          />
+        ))}
       </div>
-    </section>
+    </div>
   );
 };
 

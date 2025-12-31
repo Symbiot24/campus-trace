@@ -22,7 +22,7 @@ const itemSchema = new mongoose.Schema({
   },
   imageUrl: {
     type: String,
-    default: 'https://images.unsplash.com/photo-1586769852044-692d6e3703f0?w=400&h=300&fit=crop'
+    default: ''
   },
   status: {
     type: String,
@@ -37,6 +37,22 @@ const itemSchema = new mongoose.Schema({
       day: 'numeric',
       year: 'numeric'
     })
+  },
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  contactName: {
+    type: String,
+    required: true
+  },
+  contactEmail: {
+    type: String,
+    required: true
+  },
+  contactPhone: {
+    type: String
   }
 }, {
   timestamps: true

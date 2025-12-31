@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -17,8 +17,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Upload, Loader2 } from "lucide-react";
+import { Upload, Loader2, X, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
+import { uploadApi } from "@/lib/api";
 
 interface ReportModalProps {
   isOpen: boolean;
@@ -33,6 +34,7 @@ export interface ReportFormData {
   location: string;
   imageUrl: string;
   status: "lost" | "found";
+  contactPhone: string;
 }
 
 const categories = [
@@ -61,6 +63,9 @@ const locations = [
 
 const ReportModal = ({ isOpen, onClose, onSubmit }: ReportModalProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string>("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState<ReportFormData>({
     title: "",
     description: "",
@@ -68,13 +73,64 @@ const ReportModal = ({ isOpen, onClose, onSubmit }: ReportModalProps) => {
     location: "",
     imageUrl: "",
     status: "found",
+    contactPhone: "",
   });
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("File size must be less than 5MB");
+      return;
+    }
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error("Only image files are allowed");
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      // Show preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+
+      // Upload to backend
+      const imageUrl = await uploadApi.uploadImage(file);
+      setFormData({ ...formData, imageUrl });
+      toast.success("Image uploaded successfully!");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to upload image");
+      setImagePreview("");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setImagePreview("");
+    setFormData({ ...formData, imageUrl: "" });
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!formData.title || !formData.description || !formData.category || !formData.location) {
       toast.error("Please fill in all required fields");
+      return;
+    }
+
+    if (!formData.contactPhone) {
+      toast.error("Please provide a contact phone number");
       return;
     }
 
@@ -89,7 +145,9 @@ const ReportModal = ({ isOpen, onClose, onSubmit }: ReportModalProps) => {
         location: "",
         imageUrl: "",
         status: "found",
+        contactPhone: "",
       });
+      setImagePreview("");
       toast.success("Item reported successfully!");
       onClose();
     } catch (error) {
@@ -193,21 +251,72 @@ const ReportModal = ({ isOpen, onClose, onSubmit }: ReportModalProps) => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="imageUrl">Image URL (optional)</Label>
-            <div className="flex gap-2">
-              <Input
-                id="imageUrl"
-                placeholder="https://example.com/image.jpg"
-                value={formData.imageUrl}
-                onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-              />
-              <Button type="button" variant="outline" size="icon" disabled>
-                <Upload className="h-4 w-4" />
-              </Button>
-            </div>
+            <Label htmlFor="contactPhone">Contact Phone (WhatsApp) *</Label>
+            <Input
+              id="contactPhone"
+              type="tel"
+              placeholder="+1 234 567 8900"
+              value={formData.contactPhone}
+              onChange={(e) => setFormData({ ...formData, contactPhone: e.target.value })}
+              required
+            />
             <p className="text-xs text-muted-foreground">
-              Image upload coming soon. For now, paste a direct image URL.
+              Others will be able to contact you via WhatsApp to arrange item return.
             </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Upload Image</Label>
+            
+            {imagePreview ? (
+              <div className="relative">
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  className="w-full h-48 object-cover rounded-lg border border-border"
+                />
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="icon"
+                  className="absolute top-2 right-2"
+                  onClick={handleRemoveImage}
+                  disabled={isUploading}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : (
+              <div 
+                className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary/50 transition-colors cursor-pointer"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                  disabled={isUploading}
+                />
+                <div className="flex flex-col items-center gap-2">
+                  {isUploading ? (
+                    <>
+                      <Loader2 className="h-10 w-10 text-primary animate-spin" />
+                      <p className="text-sm text-muted-foreground">Uploading...</p>
+                    </>
+                  ) : (
+                    <>
+                      <ImageIcon className="h-10 w-10 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm font-medium">Click to upload image</p>
+                        <p className="text-xs text-muted-foreground">PNG, JPG, GIF up to 5MB</p>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="flex gap-3 pt-4">

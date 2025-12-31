@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, Calendar, Eye } from "lucide-react";
+import { MapPin, Calendar, Eye, ImageOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface Item {
@@ -48,11 +48,22 @@ const ItemCard = ({ item, onView, className, style }: ItemCardProps) => {
       style={style}
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-muted">
-        <img
-          src={item.imageUrl}
-          alt={item.title}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-        />
+        {item.imageUrl ? (
+          <img
+            src={item.imageUrl}
+            alt={item.title}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            onError={(e) => {
+              // Hide image if it fails to load
+              e.currentTarget.style.display = 'none';
+              e.currentTarget.parentElement?.classList.add('flex', 'items-center', 'justify-center');
+            }}
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <ImageOff className="h-16 w-16 text-muted-foreground/40" />
+          </div>
+        )}
         <Badge
           variant="outline"
           className={cn(

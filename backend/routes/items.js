@@ -1,22 +1,23 @@
 import express from 'express';
 import Item from '../models/Item.js';
+import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Get all items
+// Get all items (public)
 router.get('/', async (req, res) => {
   try {
-    const items = await Item.find().sort({ createdAt: -1 });
+    const items = await Item.find().populate('user', 'name email').sort({ createdAt: -1 });
     res.json(items);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-// Get single item by ID
+// Get single item by ID (public)
 router.get('/:id', async (req, res) => {
   try {
-    const item = await Item.findById(req.params.id);
+    const item = await Item.findById(req.params.id).populate('user', 'name email');
     if (!item) {
       return res.status(404).json({ message: 'Item not found' });
     }
@@ -26,31 +27,41 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Create new item
-router.post('/', async (req, res) => {
+// Create new item (protected)
+router.post('/', authenticate, async (req, res) => {
   const item = new Item({
     title: req.body.title,
     description: req.body.description,
     category: req.body.category,
     location: req.body.location,
     imageUrl: req.body.imageUrl,
-    status: req.body.status
+    status: req.body.status,
+    user: req.userId,
+    contactName: req.user.name,
+    contactEmail: req.user.email,
+    contactPhone: req.body.contactPhone || req.user.phone
   });
 
   try {
     const newItem = await item.save();
-    res.status(201).json(newItem);
+    const populatedItem = await Item.findById(newItem._id).populate('user', 'name email');
+    res.status(201).json(populatedItem);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 });
 
-// Update item
-router.patch('/:id', async (req, res) => {
+// Update item (protected - only owner)
+router.patch('/:id', authenticate, async (req, res) => {
   try {
     const item = await Item.findById(req.params.id);
     if (!item) {
       return res.status(404).json({ message: 'Item not found' });
+    }
+
+    // Check if user is the owner
+    if (item.user.toString() !== req.userId.toString()) {
+      return res.status(403).json({ message: 'Not authorized to update this item' });
     }
 
     if (req.body.title != null) item.title = req.body.title;
@@ -61,18 +72,24 @@ router.patch('/:id', async (req, res) => {
     if (req.body.status != null) item.status = req.body.status;
 
     const updatedItem = await item.save();
-    res.json(updatedItem);
+    const populatedItem = await Item.findById(updatedItem._id).populate('user', 'name email');
+    res.json(populatedItem);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 });
 
-// Delete item
-router.delete('/:id', async (req, res) => {
+// Delete item (protected - only owner)
+router.delete('/:id', authenticate, async (req, res) => {
   try {
     const item = await Item.findById(req.params.id);
     if (!item) {
       return res.status(404).json({ message: 'Item not found' });
+    }
+
+    // Check if user is the owner
+    if (item.user.toString() !== req.userId.toString()) {
+      return res.status(403).json({ message: 'Not authorized to delete this item' });
     }
 
     await item.deleteOne();
@@ -82,7 +99,7 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-// Search items
+// Search items (public)
 router.get('/search/query', async (req, res) => {
   try {
     const query = req.query.q;
@@ -91,7 +108,7 @@ router.get('/search/query', async (req, res) => {
     }
 
     const searchTerms = query.toLowerCase().split(' ');
-    const items = await Item.find();
+    const items = await Item.find().populate('user', 'name email');
     
     const filtered = items.filter(item => {
       const text = `${item.title} ${item.description} ${item.category}`.toLowerCase();
