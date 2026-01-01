@@ -22,10 +22,21 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith('image/')) {
+  const allowedMimeTypes = [
+    'image/jpeg',
+    'image/jpg',
+    'image/png',
+    'image/gif',
+    'image/webp',
+    'image/svg+xml',
+    'image/bmp',
+    'image/tiff'
+  ];
+  
+  if (allowedMimeTypes.includes(file.mimetype) || file.mimetype.startsWith('image/')) {
     cb(null, true);
   } else {
-    cb(new Error('Only image files are allowed'), false);
+    cb(new Error('Only image files (PNG, JPG, JPEG, GIF, WEBP, SVG, BMP, TIFF) are allowed'), false);
   }
 };
 
