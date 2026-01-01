@@ -35,7 +35,11 @@ const Index = () => {
     try {
       setIsLoading(true);
       const data = await itemsApi.getAll();
-      setItems(data);
+      const itemsWithId = data.map((item) => ({
+        ...item,
+        id: item.id || "",
+      }));
+      setItems(itemsWithId);
     } catch (error) {
       toast.error("Failed to load items. Please try again.");
       console.error("Error loading items:", error);
@@ -73,7 +77,7 @@ const Index = () => {
         status: formData.status,
         contactPhone: formData.contactPhone,
       });
-      setItems([newItem, ...items]);
+      setItems([{ ...newItem, id: newItem.id || "" }, ...items]);
     } catch (error) {
       toast.error("Failed to report item. Please try again.");
       console.error("Error creating item:", error);
