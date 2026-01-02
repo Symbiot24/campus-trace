@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { Loader2, LogIn } from "lucide-react";
+import { Loader2, LogIn, MapPin, ArrowLeft } from "lucide-react";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -39,74 +39,93 @@ const Login = () => {
         <title>Login - Campus-Trace</title>
       </Helmet>
 
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-secondary/5 px-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="space-y-1">
-            <div className="flex items-center justify-center mb-4">
-              <div className="p-3 bg-primary/10 rounded-full">
-                <LogIn className="h-6 w-6 text-primary" />
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-secondary/5 px-4 py-8">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-8">
+            <Link to="/" className="inline-flex items-center gap-2 group mb-6">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-card shadow-sm transition-all group-hover:border-primary">
+                <MapPin className="h-5 w-5 text-primary" />
               </div>
-            </div>
-            <CardTitle className="text-2xl font-display text-center">Welcome back</CardTitle>
-            <CardDescription className="text-center">
-              Enter your credentials to access your account
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@example.com"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  required
-                  disabled={isLoading}
-                />
-              </div>
+              <span className="font-display text-xl font-bold text-foreground">
+                CampusTrace
+              </span>
+            </Link>
+          </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  required
-                  disabled={isLoading}
-                  minLength={6}
-                />
+          <Card className="border-border/60 shadow-lg">
+            <CardHeader className="space-y-1 pb-6">
+              <div className="flex items-center justify-center mb-4">
+                <div className="p-3 bg-primary/10 rounded-full">
+                  <LogIn className="h-6 w-6 text-primary" />
+                </div>
               </div>
+              <CardTitle className="text-2xl font-display text-center">Welcome back</CardTitle>
+              <CardDescription className="text-center">
+                Enter your credentials to access your account
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pb-6">
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="you@example.com"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    required
+                    disabled={isLoading}
+                    className="h-11"
+                  />
+                </div>
 
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    Logging in...
-                  </>
-                ) : (
-                  "Log in"
-                )}
-              </Button>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    required
+                    disabled={isLoading}
+                    minLength={6}
+                    className="h-11"
+                  />
+                </div>
 
-              <div className="text-center text-sm">
-                <span className="text-muted-foreground">Don't have an account? </span>
-                <Link to="/signup" className="text-primary hover:underline font-medium">
-                  Sign up
-                </Link>
-              </div>
+                <Button type="submit" className="w-full h-11" disabled={isLoading}>
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      Logging in...
+                    </>
+                  ) : (
+                    "Log in"
+                  )}
+                </Button>
 
-              <div className="text-center text-sm">
-                <Link to="/" className="text-muted-foreground hover:text-foreground">
-                  ← Back to home
-                </Link>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+                <div className="text-center text-sm pt-2">
+                  <span className="text-muted-foreground">Don't have an account? </span>
+                  <Link to="/signup" className="text-primary hover:underline font-medium">
+                    Sign up
+                  </Link>
+                </div>
+
+                <div className="text-center text-sm pt-2">
+                  <Link 
+                    to="/" 
+                    className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 transition-colors"
+                  >
+                    <ArrowLeft className="h-3.5 w-3.5" />
+                    Back to home
+                  </Link>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </>
   );

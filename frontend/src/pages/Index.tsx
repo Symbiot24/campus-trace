@@ -123,11 +123,11 @@ const Index = () => {
 
           <CommunityValuesSection onOpenReport={handleOpenReport} />
 
-          <section className="py-16 bg-muted/30">
-            <div className="container mx-auto px-4">
-              <div className="text-center mb-8">
-                <h2 className="text-3xl font-display font-bold mb-3">Recently Reported Items</h2>
-                <p className="text-muted-foreground mb-6">
+          <section id="recent-items" className="py-16 lg:py-20 bg-background scroll-mt-16">
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="text-center mb-8 lg:mb-12">
+                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold mb-4">Recently Reported Items</h2>
+                <p className="text-muted-foreground text-base sm:text-lg mb-6">
                   Browse through items that have been found or reported as lost
                 </p>
                 <FilterButtons
